@@ -1,9 +1,9 @@
- import dp from "mongoose";
+ import mongoose from "mongoose";
 
  const connectdb = async()=>{
 
     try{
-         await db.connectdb(process.env.MONGO_URI)
+         await mongoose.connect(process.env.MONGO_URI)
          console.log( "Mongodb is Connected Sucssfuly");
 
     }catch(error){
