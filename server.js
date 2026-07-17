@@ -2,6 +2,8 @@
  import connectdb from "./Config/config.js";
  import cors from "cors";
  import dotenv from "dotenv";
+ import { initsocket } from "./socket/socket.js";
+ import http from "http";
 
   dotenv.config();
 
@@ -12,6 +14,10 @@
   app.use(cors());
 
   app.use(express.json());
+
+  const server = http.createServer(app);
+
+  initsocket(server);
 
   app.get("/" , (req,res) =>{
     console.log(" backend is running");
