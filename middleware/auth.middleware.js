@@ -1,22 +1,54 @@
-//jwt import
-//users from model
+import JWT from "jsonwebtoken";
+import User from "../model/user.js";
 
-//create a middleware arrow function with req res and next parametters
 
-// try block
+ export const AuthUser = async(req,res,next)=>{
 
-// get token 
+        try{
 
-// check token exists
+            const token = req.cookies.Jwt;
 
-//decode the token 
+            if(!token){
+                res.status(401).json({
+                    message:"Unauthorized No-Token"
+                })
+            }
 
-//check the docoded token exists
+          //decode the token 
 
-//find user from database use decoeded userid
+            const decoded = JWT.verify(token,process.env.JWT_SECRET);
 
-//check user exists
+            //check the docoded token exists
 
-//attach user to request
+            if(!decoded){
+                 res.status(401).json({
+                    message:"Unauthorized Invalid-token"
+                 })
+            };
 
-//catch block
+            ////find user from database use decoeded userid
+
+            const user = await User.findById(decoded.UserId).select("password");
+
+            ////check user exists
+
+            if(!user){
+                res.status(404).json({
+                    message:"User Not Found"
+                })
+            }
+
+            req.user = user; // attach user to the request
+
+            //IT GOOES TO THE NEXT MIDDLEWARE
+            
+            next();
+        }catch(error){
+            console.log("User Authentication Middleware Error:", error.message);
+            res.status(401).json({
+                message:"Unauthorized"
+            });
+        };
+};
+
+
