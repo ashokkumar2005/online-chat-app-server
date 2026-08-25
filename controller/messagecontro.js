@@ -1,5 +1,5 @@
  
- import Message from "../model/message.jsx";
+ import Message from "../model/message.js";
 
 
  export const sendmessage = async()=>{
@@ -23,7 +23,7 @@
     }
   }
 
-  export const getmessage = async()=>{
+export const getmessage = async()=>{
      
     try{
 
