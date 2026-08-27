@@ -1,0 +1,15 @@
+import express from "express";
+import {Register,
+        Login,
+        Getcurrentuser} from "../authentication/auth.controller.js";
+
+import auth from "../middleware/auth.middleware.js";
+
+const router = express.Router();
+
+router.post("/Register",Register);
+router.post("/login",Login);
+
+router.get("/me",auth,Getcurrentuser);  
+
+export default router;
