@@ -1,6 +1,6 @@
 
 import express, { Router } from "express";
-import{ sendmessage, getmessage} from "../controller/messagecontro.js";
+import{ sendmessage, getmessage} from "../controller/message.controller.js";
 import {AuthUser} from "../middleware/auth.middleware.js"
 
 const route = express.Router();

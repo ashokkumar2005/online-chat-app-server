@@ -3,13 +3,13 @@ import {Register,
         Login,
         Getcurrentuser} from "../authentication/auth.controller.js";
 
-import auth from "../middleware/auth.middleware.js";
+import {AuthUser} from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
 router.post("/Register",Register);
 router.post("/login",Login);
 
-router.get("/me",auth,Getcurrentuser);  
+router.get("/me",AuthUser,Getcurrentuser);  
 
 export default router;
