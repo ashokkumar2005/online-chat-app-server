@@ -1,42 +1,43 @@
- import express from "express";
- import connectdb from "./Config/config.js";
- import cors from "cors";
- import dotenv from "dotenv";
-//  import { initsocket } from "./socket/socket.js";
- import http from "http";
- import Authroute from "./routes/auth.route.js";
- import Messageroute from "./routes/messageroute.js";
- import Userroute from "./routes/user.route.js";
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import http from "http";
+import cookieParser from "cookie-parser";
+import connectdb from "./Config/config.js";
+import { initsocket } from "./socket/socket.js";
+import Authroute from "./routes/auth.route.js";
+import Messageroute from "./routes/messageroute.js";
+import Userroute from "./routes/user.route.js";
 
+dotenv.config();
 
-  dotenv.config();
+const app = express();
+const PORT = Number(process.env.PORT) || 5000;
 
-  connectdb();
-
-  const app = express();
-
-  app.use(cors());
-
-  app.use(express.json());
-
-  app.use("/api/users",Userroute);
-  app.use("/api/messages" , Messageroute);
-  app.use("/api/auth" , Authroute);
-
-
-  const server = http.createServer(app);
-
-  // initsocket(server);
-
-  app.get("/" , (req,res) =>{
-    console.log(" backend is running");
-  });
-
-  const PORT = process.env.PORT || 5000 ;
-
-  app.listen( PORT , ()=>{
-    console.log(" Server is Running");
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
   })
+);
+app.use(express.json());
+app.use(cookieParser());
 
+app.use("/api/users", Userroute);
+app.use("/api/messages", Messageroute);
+app.use("/api/auth", Authroute);
+
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Backend is running" });
+});
+
+connectdb();
+
+const server = http.createServer(app);
+initsocket(server);
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 

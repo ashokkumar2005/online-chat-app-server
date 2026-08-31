@@ -2,145 +2,98 @@ import User from "../model/user.js";
 import bcrypt from "bcrypt";
 import genratetoken from "../util/genratetoken.js";
 
-export const Register = async(req,res)=>{
+export const Register = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-    try{
-
-        const{name,email,passsword} = req.body;
-
-        //check any filed is empty
-        if(!name || !email||!passsword){
-            return res.ststus(400).json({
-                message:" Filed is Empty"
-            });
-        };
-
-        //if email already exists
-
-        const existsemail = await User.fineOne({email});
-
-        if(existsemail){
-            return res.status(400).json({
-                message:"Email already exists"
-            });
-        };
-
-        //Hash the password
-
-        const HashPassword = await bcrypt.hash(passsword,10);
-
-        //create user
-        const user = User.Create({
-            name,
-            email,
-            passsword:HashPassword
-
-        });
-        //Gentrate JWT 
-        genratetoken(user._id, res);
-
-        //send the sucess responce
-
-        res.status(201).json({
-            message:"User Created Successfully",
-            user:{
-                _id:user._id,
-                name:user.name,
-                email:user.email
-            }
-        });
-    }catch(error){
-        res.ststus(500).json({
-            message:"Server error",
-            error:error.message
-        })
-
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-}
+    const existingUser = await User.findOne({ email });
 
-export const Login =async(req,res)=>{
-
-    try{
-
-        const{email,password} = req.body;
-
-        //any filed is empty
-        if(!email ||!password){
-            res.status(400).json({
-                message:"Filed is Empty"
-            })
-        }
-
-        const user = await User.findOne({email});
-
-        //check user is not there
-        if(!user){
-            res.ststus(400).json({
-                message:"Email is Not Found"
-            })
-        }
-
-        //check password is correct or not
-
-        const comparepass = await bcrypt.compare(
-            password,
-            user.password
-        );
-
-        if(!comparepass){
-            res.status(400).json({
-                message:"Password Incorrect"
-            })
-        };
-
-        //gentrate token
-        const token = genratetoken(user._id);
-
-        //store token into cookie
-        res.cookie("jwt",token,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV ==="production",
-            sameSite:"strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
-        return res.status(200).json({
-            message:"Login Successful",
-            user:{
-                id:user._id,
-                name:user.name,
-                email:user.email
-            }
-        })
-    }catch(error){
-        res.status(500).json({
-            message:"Server Error",
-            error:error.message
-        })
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already exists" });
     }
-}
 
-export const Getcurrentuser = async(req,res)=>{
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
-    try{
+    const token = genratetoken(user._id, res);
 
-        //find user 
-        const user = await User.findById(req.user.userId).select("-password");
+    return res.status(201).json({
+      message: "User created successfully",
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
 
-        if(!user){
-            res.ststus(400).json({
-                message:"User Not Found"
-            })
-        };
+export const Login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-        res.ststus(200).json({
-            user
-        });
-
-    }catch(error){
-        res.ststus(500).json({
-            message:"Server Error",
-            error: error.message
-        })
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
-}
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Email not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Password is incorrect" });
+    }
+
+    const token = genratetoken(user._id, res);
+
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+export const Getcurrentuser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
