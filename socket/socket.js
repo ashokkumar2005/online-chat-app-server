@@ -3,6 +3,12 @@ import { Server } from "socket.io";
 let io;
 const users = {};
 
+const broadcastOnlineUsers = () => {
+  if (io) {
+    io.emit("getOnlineUsers", Object.keys(users));
+  }
+};
+
 export const initsocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
@@ -19,6 +25,7 @@ export const initsocket = (httpServer) => {
       if (userId) {
         users[userId] = socket.id;
         console.log("joined users:", users);
+        broadcastOnlineUsers();
       }
     });
 
@@ -30,13 +37,7 @@ export const initsocket = (httpServer) => {
         }
       }
       console.log("remaining users:", users);
-    });
-
-    socket.on("sendMessage", (data) => {
-      const targetSocketId = getReciverSocketId(data.receiverId);
-      if (targetSocketId) {
-        io.to(targetSocketId).emit("receiveMessage", data);
-      }
+      broadcastOnlineUsers();
     });
   });
 

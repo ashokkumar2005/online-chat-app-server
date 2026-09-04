@@ -31,13 +31,15 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "Backend is running" });
 });
 
-connectdb();
+const start = async () => {
+  await connectdb();
 
-const server = http.createServer(app);
-initsocket(server);
+  const server = http.createServer(app);
+  initsocket(server);
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
 
-
+start();
